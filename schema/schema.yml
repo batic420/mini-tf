@@ -13,16 +13,20 @@ variables:
   defaultPermissions: 'read'
 
 resources:
-  - resource: example
+  - name: config_folder
+    displayName: Config directory
+    type: folder
+    properties:
+      location: /etc/mini-tf
+    outputs:
+      path: properties.location
+
+  - name: config_file
     displayName: JSON example
     type: file
     properties:
       extension: .json
-      location: /usr/bin
-
-  - resource: example2
-    displayName: Go example
-    type: file
-    properties:
-      extension: .go
-      location: /
+      location: '{{ .resources.config_folder.outputs.path }}'
+    outputs:
+      path: properties.location
+    dependsOn: [config_folder]
