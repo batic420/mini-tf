@@ -3,6 +3,7 @@ package decoder
 import (
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/goccy/go-yaml"
 )
@@ -28,14 +29,14 @@ type Resource struct {
 	Name        string             `yaml:"name"`
 	DisplayName *string            `yaml:"displayName,omitempty"`
 	Type        string             `yaml:"type"`
-	DependsOn   *[]Resource        `yaml:"dependsOn,omitemtpy"`
+	DependsOn   *[]string          `yaml:"dependsOn,omitempty"`
 	Properties  ResourceProperties `yaml:"properties"`
 	Outputs     *ResourceOutputs   `yaml:"outputs"`
 }
 
 type ResourceProperties struct {
 	Location  string  `yaml:"location"`
-	Extension *string `yaml:"displayName,omitempty"`
+	Extension *string `yaml:"extension,omitempty"`
 }
 
 type ResourceOutputs struct {
@@ -64,6 +65,11 @@ func (env *Envelope) Validate() error {
 		return fmt.Errorf("`resources` must contain at least one resource")
 	}
 
+	names := make([]string, 0, len(env.Resources))
+	for _, v := range env.Resources {
+		names = append(names, v.Name)
+	}
+
 	for i, s := range env.Resources {
 		if s.Name == "" {
 			return fmt.Errorf("resources.resource[%d].name is required", i)
@@ -74,7 +80,19 @@ func (env *Envelope) Validate() error {
 		if s.Type == "file" && s.Properties.Extension == nil {
 			return fmt.Errorf("resources.resource[%d].properties.extension is required when using type `file`", i)
 		}
+		if s.DependsOn != nil && !contains(names, s.DependsOn) {
+			return fmt.Errorf("resources.resource[%d].dependsOn references unknown resource", i)
+		}
 	}
 
 	return nil
+}
+
+func contains(existing []string, targets *[]string) bool {
+	for _, target := range *targets {
+		if !slices.Contains(existing, target) {
+			return false
+		}
+	}
+	return true
 }
