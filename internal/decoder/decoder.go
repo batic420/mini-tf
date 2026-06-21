@@ -8,9 +8,9 @@ import (
 )
 
 type Envelope struct {
-	Parameters []Parameter `yaml:"parameters"`
-	Variables  Variables   `yaml:"variables"`
-	Resources  []Resource  `yaml:"resources"`
+	Parameters *[]Parameter `yaml:"parameters,omitempty"`
+	Variables  *Variables   `yaml:"variables,omitempty"`
+	Resources  []Resource   `yaml:"resources"`
 }
 
 type Parameter struct {
@@ -26,10 +26,10 @@ type Variables struct {
 
 type Resource struct {
 	Name        string             `yaml:"name"`
-	DisplayName string             `yaml:"displayName"`
+	DisplayName *string            `yaml:"displayName"`
 	Type        string             `yaml:"type"`
 	Properties  ResourceProperties `yaml:"properties"`
-	Outputs     ResourceOutputs    `yaml:"outputs"`
+	Outputs     *ResourceOutputs   `yaml:"outputs"`
 }
 
 type ResourceProperties struct {
@@ -58,5 +58,22 @@ func Load(path string) (*Envelope, error) {
 	return &env, nil
 }
 
-// TODO:
-// - Add pointer receiver for validation of `env`
+func (env *Envelope) Validate() error {
+	if len(env.Resources) == 0 {
+		return fmt.Errorf("`resources` must contain at least one resource")
+	}
+
+	for i, s := range env.Resources {
+		if s.Name == "" {
+			return fmt.Errorf("resources.resource[%d].name is required", i)
+		}
+		if s.Type == "" {
+			return fmt.Errorf("resources.resource[%d].type is required", i)
+		}
+		if s.Type == "file" && s.Properties.Extension == nil {
+			return fmt.Errorf("resources.resource[%d].properties.extension is required when using type `file`", i)
+		}
+	}
+
+	return nil
+}
