@@ -26,8 +26,9 @@ type Variables struct {
 
 type Resource struct {
 	Name        string             `yaml:"name"`
-	DisplayName *string            `yaml:"displayName"`
+	DisplayName *string            `yaml:"displayName,omitempty"`
 	Type        string             `yaml:"type"`
+	DependsOn   *[]Resource        `yaml:"dependsOn,omitemtpy"`
 	Properties  ResourceProperties `yaml:"properties"`
 	Outputs     *ResourceOutputs   `yaml:"outputs"`
 }
