@@ -57,6 +57,10 @@ func Load(path string) (*Envelope, error) {
 		return nil, fmt.Errorf("parsing config: %w\n", err)
 	}
 
+	if err := env.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid config: %w\n", err)
+	}
+
 	return &env, nil
 }
 
