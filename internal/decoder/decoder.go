@@ -2,6 +2,7 @@ package decoder
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"slices"
 
@@ -39,14 +40,8 @@ type ResourceOutputs struct {
 	Path string `yaml:"path"`
 }
 
-func Load(path string) (*Envelope, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("opening config: %w\n", err)
-	}
-	defer f.Close()
-
-	dec := yaml.NewDecoder(f, yaml.Strict())
+func Parse(r io.Reader) (*Envelope, error) {
+	dec := yaml.NewDecoder(r, yaml.Strict())
 
 	var env Envelope
 	if err := dec.Decode(&env); err != nil {
@@ -58,6 +53,15 @@ func Load(path string) (*Envelope, error) {
 	}
 
 	return &env, nil
+}
+
+func Load(path string) (*Envelope, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("opening config: %w", err)
+	}
+	defer f.Close()
+	return Parse(f)
 }
 
 func (env *Envelope) Validate() error {
