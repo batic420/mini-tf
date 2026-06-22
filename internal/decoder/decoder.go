@@ -9,9 +9,9 @@ import (
 )
 
 type Envelope struct {
-	Parameters *[]Parameter `yaml:"parameters,omitempty"`
-	Variables  *Variables   `yaml:"variables,omitempty"`
-	Resources  []Resource   `yaml:"resources"`
+	Parameters *[]Parameter       `yaml:"parameters,omitempty"`
+	Variables  *map[string]string `yaml:"variables,omitempty"`
+	Resources  []Resource         `yaml:"resources"`
 }
 
 type Parameter struct {
@@ -19,10 +19,6 @@ type Parameter struct {
 	Type    string   `yaml:"type"`
 	Default string   `yaml:"default"`
 	Values  []string `yaml:"values"`
-}
-
-type Variables struct {
-	Variable string `yaml:"variables"`
 }
 
 type Resource struct {
