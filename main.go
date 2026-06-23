@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -18,5 +19,6 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	fmt.Printf("%+v\n", env)
+	b, _ := json.MarshalIndent(env, "", " ")
+	fmt.Println(string(b))
 }
