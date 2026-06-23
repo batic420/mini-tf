@@ -31,15 +31,6 @@ type Resource struct {
 	Outputs     map[string]string `yaml:"outputs"`
 }
 
-type ResourceProperties struct {
-	Location  string  `yaml:"location"`
-	Extension *string `yaml:"extension,omitempty"`
-}
-
-type ResourceOutputs struct {
-	Path string `yaml:"path"`
-}
-
 func Parse(r io.Reader) (*Envelope, error) {
 	dec := yaml.NewDecoder(r, yaml.Strict())
 
