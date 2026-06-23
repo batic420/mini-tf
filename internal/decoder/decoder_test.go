@@ -32,24 +32,24 @@ func TestValidate(t *testing.T) {
 						// --> No DisplayName property
 						Type: "folder",
 						// --> No DependsOn property
-						Properties: ResourceProperties{
-							Location: "/etc/mini-tf",
-							// --> No Extension property
+						Properties: map[string]any{
+							"location": "/etc/mini-tf",
+							// --> No "extension" property
 						},
-						Outputs: &ResourceOutputs{
-							Path: "properties.location",
+						Outputs: map[string]string{
+							"path": "properties.location",
 						},
 					},
 					{
 						Name:        "config_file",
 						DisplayName: sp("JSON example"),
 						Type:        "file",
-						Properties: ResourceProperties{
-							Location:  "{{ .resources.config_folder.outputs.path }}",
-							Extension: sp(".json"),
+						Properties: map[string]any{
+							"location":  "{{ .resources.config_folder.outputs.path }}",
+							"extension": ".json",
 						},
-						Outputs: &ResourceOutputs{
-							Path: "properties.location",
+						Outputs: map[string]string{
+							"path": "properties.location",
 						},
 						DependsOn: &[]string{
 							"config_folder",
@@ -76,24 +76,24 @@ func TestValidate(t *testing.T) {
 						// --> No DisplayName property
 						Type: "folder",
 						// --> No DependsOn property
-						Properties: ResourceProperties{
-							Location: "/etc/mini-tf",
+						Properties: map[string]any{
+							"location": "/etc/mini-tf",
 							// --> No Extension property
 						},
-						Outputs: &ResourceOutputs{
-							Path: "properties.location",
+						Outputs: map[string]string{
+							"path": "properties.location",
 						},
 					},
 					{
 						Name:        "config_file",
 						DisplayName: sp("JSON example"),
 						Type:        "file",
-						Properties: ResourceProperties{
-							Location:  "{{ .resources.config_folder.outputs.path }}",
-							Extension: sp(".json"),
+						Properties: map[string]any{
+							"location":  "{{ .resources.config_folder.outputs.path }}",
+							"extension": ".json",
 						},
-						Outputs: &ResourceOutputs{
-							Path: "properties.location",
+						Outputs: map[string]string{
+							"path": "properties.location",
 						},
 						DependsOn: &[]string{
 							"config_folder",
@@ -101,7 +101,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			wantErr: "Required property on at least one resource is missing",
+			wantErr: "name is required",
 		},
 		{
 			name: "unmatching dependsOn property",
@@ -121,24 +121,24 @@ func TestValidate(t *testing.T) {
 						// --> No DisplayName property
 						Type: "folder",
 						// --> No DependsOn property
-						Properties: ResourceProperties{
-							Location: "/etc/mini-tf",
+						Properties: map[string]any{
+							"location": "/etc/mini-tf",
 							// --> No Extension property
 						},
-						Outputs: &ResourceOutputs{
-							Path: "properties.location",
+						Outputs: map[string]string{
+							"path": "properties.location",
 						},
 					},
 					{
 						Name:        "config_file",
 						DisplayName: sp("JSON example"),
 						Type:        "file",
-						Properties: ResourceProperties{
-							Location:  "{{ .resources.config_folder.outputs.path }}",
-							Extension: sp(".json"),
+						Properties: map[string]any{
+							"location":  "{{ .resources.config_folder.outputs.path }}",
+							"extension": ".json",
 						},
-						Outputs: &ResourceOutputs{
-							Path: "properties.location",
+						Outputs: map[string]string{
+							"path": "properties.location",
 						},
 						DependsOn: &[]string{
 							"unknown_resource",
@@ -146,7 +146,7 @@ func TestValidate(t *testing.T) {
 					},
 				},
 			},
-			wantErr: "At least one dependsOn property points to an unknown resource",
+			wantErr: "dependsOn references unknown resource",
 		},
 	}
 	for _, tc := range cases {

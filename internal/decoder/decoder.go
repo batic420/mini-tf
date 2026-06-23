@@ -23,12 +23,12 @@ type Parameter struct {
 }
 
 type Resource struct {
-	Name        string             `yaml:"name"`
-	DisplayName *string            `yaml:"displayName,omitempty"`
-	Type        string             `yaml:"type"`
-	DependsOn   *[]string          `yaml:"dependsOn,omitempty"`
-	Properties  ResourceProperties `yaml:"properties"`
-	Outputs     *ResourceOutputs   `yaml:"outputs"`
+	Name        string            `yaml:"name"`
+	DisplayName *string           `yaml:"displayName,omitempty"`
+	Type        string            `yaml:"type"`
+	DependsOn   *[]string         `yaml:"dependsOn,omitempty"`
+	Properties  map[string]any    `yaml:"properties"`
+	Outputs     map[string]string `yaml:"outputs"`
 }
 
 type ResourceProperties struct {
@@ -75,20 +75,42 @@ func (env *Envelope) Validate() error {
 	}
 
 	for i, s := range env.Resources {
-		if s.Name == "" {
-			return fmt.Errorf("resources.resource[%d].name is required", i)
-		}
-		if s.Type == "" {
-			return fmt.Errorf("resources.resource[%d].type is required", i)
-		}
-		if s.Type == "file" && s.Properties.Extension == nil {
-			return fmt.Errorf("resources.resource[%d].properties.extension is required when using type `file`", i)
+		if err := s.Check(); err != nil {
+			return fmt.Errorf("resources.resource[%d]: %w", i, err)
 		}
 		if s.DependsOn != nil && !contains(names, s.DependsOn) {
 			return fmt.Errorf("resources.resource[%d].dependsOn references unknown resource", i)
 		}
 	}
 
+	return nil
+}
+
+func (r *Resource) Check() error {
+	if r.Name == "" {
+		return fmt.Errorf("name is required")
+	}
+	if r.Type == "" {
+		return fmt.Errorf("type is required")
+	}
+	switch r.Type {
+	case "file":
+		loc, ok := r.Properties["location"].(string)
+		if !ok || loc == "" {
+			return fmt.Errorf("resource %q: properties.location is required for type file", r.Name)
+		}
+		if ext, present := r.Properties["extension"]; present {
+			if _, ok := ext.(string); !ok {
+				return fmt.Errorf("resource %q: properties.extension must be a string", r.Name)
+			}
+		}
+	case "folder":
+		if _, ok := r.Properties["location"].(string); !ok {
+			return fmt.Errorf("resource %q: properties.location is required for type folder", r.Name)
+		}
+	default:
+		return fmt.Errorf("resource %q: unknown type %q", r.Name, r.Type)
+	}
 	return nil
 }
 
