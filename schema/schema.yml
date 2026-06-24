@@ -13,14 +13,6 @@ variables:
   defaultPermissions: 'read'
 
 resources:
-  - name: config_folder
-    displayName: Config directory
-    type: folder
-    properties:
-      location: /etc/mini-tf
-    outputs:
-      path: properties.location
-
   - name: config_file
     displayName: JSON example
     type: file
@@ -30,3 +22,11 @@ resources:
     outputs:
       path: properties.location
     dependsOn: [config_folder]
+    
+  - name: config_folder
+    displayName: Config directory
+    type: folder
+    properties:
+      location: /etc/mini-tf
+    outputs:
+      path: properties.location
