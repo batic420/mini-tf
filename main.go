@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/batic420/mini-tf/internal/creator"
 	"github.com/batic420/mini-tf/internal/decoder"
 )
 
@@ -19,6 +19,7 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	b, _ := json.MarshalIndent(env, "", " ")
-	fmt.Println(string(b))
+	if error := creator.CreateResource(*env); error != nil {
+		fmt.Println(error.Error())
+	}
 }
