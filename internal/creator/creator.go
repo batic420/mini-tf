@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"text/template"
 
 	"github.com/batic420/mini-tf/internal/decoder"
 )
@@ -57,27 +59,82 @@ func topoSort(resources []decoder.Resource) ([]decoder.Resource, error) {
 	return sorted, nil
 }
 
+func buildTemplateData(resolved map[string]map[string]string) map[string]any {
+	data := map[string]any{}
+	for name, outputs := range resolved {
+		data[name] = map[string]any{"outputs": outputs}
+	}
+	return data
+}
+
+func resolveString(val string, resolved map[string]map[string]string) (string, error) {
+	if !strings.Contains(val, "{{") {
+		return val, nil
+	}
+	tmpl, err := template.New("").Parse(val)
+	if err != nil {
+		return "", err
+	}
+	var buf strings.Builder
+	if err := tmpl.Execute(&buf, map[string]any{"resources": buildTemplateData(resolved)}); err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
+func resolveProps(resource decoder.Resource, resolved map[string]map[string]string) (map[string]string, error) {
+	result := map[string]string{}
+	for key, val := range resource.Properties {
+		strVal, ok := val.(string)
+		if !ok {
+			continue
+		}
+		resolvedVal, err := resolveString(strVal, resolved)
+		if err != nil {
+			return nil, fmt.Errorf("property %q: %w", key, err)
+		}
+		result[key] = resolvedVal
+	}
+	return result, nil
+}
+
 func CreateResource(env decoder.Envelope) error {
 	sortedResources, err := topoSort(env.Resources)
 	if err != nil {
 		return fmt.Errorf("Got an error sorting the resources based on their dependencies: %w", err)
 	}
 
+	resolved := map[string]map[string]string{}
+
 	for _, resource := range sortedResources {
+		props, err := resolveProps(resource, resolved)
+		if err != nil {
+			return fmt.Errorf("resource %q: %w", resource.Name, err)
+		}
+
 		switch resource.Type {
 		case "file":
-			fileName := fmt.Sprintf("%s%s", resource.Name, resource.Properties["extension"])
-			fmt.Println(fileName)
+			fileName := fmt.Sprintf("%s%s", resource.Name, props["extension"])
+			filePath := props["location"]
+			fullPath := filepath.Join(filePath, fileName)
+			f, err := os.Create(fullPath)
+			if err != nil {
+				return fmt.Errorf("creating file %q: %w", fullPath, err)
+			}
+			if err := f.Close(); err != nil {
+				return fmt.Errorf("closing file %q: %w", fullPath, err)
+			}
 		case "folder":
-			loc, _ := resource.Properties["location"].(string)
 			cwd, err := os.Getwd()
 			if err != nil {
 				return fmt.Errorf("Got an error retrieving the current working directory: %w", err)
 			}
-			fullPath := filepath.Join(cwd, loc, resource.Name)
+			fullPath := filepath.Join(cwd, props["location"], resource.Name)
 			if err := os.MkdirAll(fullPath, 0755); err != nil {
 				return fmt.Errorf("Got an error creating the directory: %w", err)
 			}
+			resolved[resource.Name] = map[string]string{"path": fullPath}
 		}
 	}
 	return nil
