@@ -3,17 +3,10 @@
 parameters:
   - name: environment
     type: string
-    default: 'dev'
-    values:
-      - 'dev'
-      - 'stage'
-      - 'prod'
-
-variables:
-  defaultPermissions: 'read'
+    value: 'dev'
 
 resources:
-  - name: config_file
+  - name: config_file_{{ .parameters.environment }}
     displayName: JSON example
     type: file
     properties:
@@ -27,6 +20,6 @@ resources:
     displayName: Config directory
     type: folder
     properties:
-      location: /etc/mini-tf
+      location: tests/etc/mini-tf
     outputs:
       path: properties.location

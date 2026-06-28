@@ -16,10 +16,9 @@ type Envelope struct {
 }
 
 type Parameter struct {
-	Name    string   `yaml:"name"`
-	Type    string   `yaml:"type"`
-	Default string   `yaml:"default"`
-	Values  []string `yaml:"values"`
+	Name  string `yaml:"name"`
+	Type  string `yaml:"type"`
+	Value string `yaml:"value"`
 }
 
 type Resource struct {

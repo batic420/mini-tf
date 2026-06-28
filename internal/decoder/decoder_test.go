@@ -18,10 +18,9 @@ func TestValidate(t *testing.T) {
 			name: "valid envelope",
 			env: Envelope{
 				Parameters: &[]Parameter{{
-					Name:    "environment",
-					Type:    "string",
-					Default: "dev",
-					Values:  []string{"dev", "stage", "prod"},
+					Name:  "environment",
+					Type:  "string",
+					Value: "dev",
 				}},
 				Variables: &map[string]string{
 					"defaultPermissions": "read",
@@ -62,10 +61,9 @@ func TestValidate(t *testing.T) {
 			name: "missing required values",
 			env: Envelope{
 				Parameters: &[]Parameter{{
-					Name:    "environment",
-					Type:    "string",
-					Default: "dev",
-					Values:  []string{"dev", "stage", "prod"},
+					Name:  "environment",
+					Type:  "string",
+					Value: "dev",
 				}},
 				Variables: &map[string]string{
 					"defaultPermissions": "read",
@@ -107,10 +105,9 @@ func TestValidate(t *testing.T) {
 			name: "unmatching dependsOn property",
 			env: Envelope{
 				Parameters: &[]Parameter{{
-					Name:    "environment",
-					Type:    "string",
-					Default: "dev",
-					Values:  []string{"dev", "stage", "prod"},
+					Name:  "environment",
+					Type:  "string",
+					Value: "dev",
 				}},
 				Variables: &map[string]string{
 					"defaultPermissions": "read",
